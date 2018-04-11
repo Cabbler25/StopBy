@@ -41,7 +41,10 @@
     //profile page
     <string name="profile_usernameTag">Username:</string>
     <string name="profile_emailTag">Email:</string>
-    <string name="profile_userInfoTag">Interests:</string>
+    <string name="profile_userInterestTag">Interests:</string>
+    <string name="profile_userInfo">I enjoy family, wisdom, knowledge, and food.</string>
+    <string name="profile_closeBtn">X</string>
+    <string name="profile_messageBtn">Message</string>
     <string name="close">Close</string>
 
 </resources>

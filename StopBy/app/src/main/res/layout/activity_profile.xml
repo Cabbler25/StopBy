@@ -64,7 +64,7 @@
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:width="70dp"
-            android:text="@string/profile_userInfoTag" />
+            android:text="@string/profile_userInterestTag" />
 
         <TextView
             android:id="@+id/profile_userInfoField"
