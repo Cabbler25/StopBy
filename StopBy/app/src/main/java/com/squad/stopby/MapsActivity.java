@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
@@ -56,22 +57,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final double coordinate_offset = 0.00002f;
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        // If request is cancelled, the result arrays are empty.
-        if(requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    //TODO edit min time and min distance for battery efficiency purposes
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                }
-            }
-        }
-        return;
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
@@ -98,76 +83,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onCancelled(DatabaseError databaseError) {}
         });
 
-        db.getDatabase().getReference("Location").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Iterable<DataSnapshot> children = dataSnapshot.getChildren();
-
-                for(DataSnapshot child: children){
-                    LocationDB value = child.getValue(LocationDB.class);
-                    locations.add(value);
-                }
-                mMap.clear();
-                for(LocationDB loc: locations) {
-                    if(username != "" && !(loc.getUsername().equals(username))){
-                        mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(loc.getLatitude()) - locations.indexOf(loc) * coordinate_offset, Double.parseDouble(loc.getLongitude()) - locations.indexOf(loc) * coordinate_offset))
-                                .title(loc.getUsername())
-                                .snippet(loc.getPost())
-                                .icon(BitmapDescriptorFactory
-                                        .defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        
+        //locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        //new FindUsersLocation().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, "");
+        //new FindNearbyUsers().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, "");
+/*
 
 
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Log.e("Location: ", location.toString());
-                //Set map to open up to users location
-                LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                mMap.clear();
-                //Put marker for user on the map
-                addMarkers();
-                mMap.addMarker(new MarkerOptions().position(userLocation)
-                        .title("You are here").icon
-                                (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-                for(LocationDB loc: locations) {
-                    if(username != "" && !(loc.getUsername().equals(username))){
-                        mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(loc.getLatitude()) - locations.indexOf(loc) * coordinate_offset, Double.parseDouble(loc.getLongitude()) - locations.indexOf(loc) * coordinate_offset))
-                                .title(loc.getUsername())
-                                .snippet(loc.getPost())
-                                .icon(BitmapDescriptorFactory
-                                        .defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
-                    }
-                }
-            }
+        //find nearby users
 
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        };
 
         //Check for permission to get users location
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -203,7 +132,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-
+*/
     }
 
     public void queryUser(String user){
@@ -220,6 +149,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             //This is profile object that should be displayed in popup info window
                             Profile usersProfile = singleSnapShot.getValue(Profile.class);
+
+
                             final AlertDialog.Builder mBuilder = new AlertDialog.Builder(MapsActivity.this);
                             final View mView = getLayoutInflater().inflate(R.layout.popup_window, null);
                             TextView userName = mView.findViewById(R.id.textView);
@@ -275,5 +206,86 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(new LatLng(43.001089, -78.786095))
                 .title("Student Union").icon
                         (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+    }
+
+    //run the post updates in a thread
+    private class FindNearbyUsers extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... strings) {
+            db.getDatabase().getReference("Location").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Iterable<DataSnapshot> children = dataSnapshot.getChildren();
+
+                    for(DataSnapshot child: children){
+                        LocationDB value = child.getValue(LocationDB.class);
+                        locations.add(value);
+                    }
+                    mMap.clear();
+                    addMarkers();
+                    for(LocationDB loc: locations) {
+                        if(username != "" && !(loc.getUsername().equals(username))){
+                            mMap.addMarker(new MarkerOptions().
+                                    position(new LatLng(Double.parseDouble(loc.getLatitude()) - locations.indexOf(loc) * coordinate_offset, Double.parseDouble(loc.getLongitude()) - locations.indexOf(loc) * coordinate_offset))
+                                    .title(loc.getUsername())
+                                    .snippet(loc.getPost())
+                                    .icon(BitmapDescriptorFactory
+                                            .defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+            return null;
+        }
+    }
+
+    private class FindUsersLocation extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... strings) {
+
+            locationListener = new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    Log.e("Location: ", location.toString());
+                    //Set map to open up to users location
+                    LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    mMap.clear();
+                    //Put marker for user on the map
+                    addMarkers();
+                    mMap.addMarker(new MarkerOptions().position(userLocation)
+                            .title("You are here").icon
+                                    (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                    for(LocationDB loc: locations) {
+                        if(username != "" && !(loc.getUsername().equals(username))){
+                            mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(loc.getLatitude()) - locations.indexOf(loc) * coordinate_offset, Double.parseDouble(loc.getLongitude()) - locations.indexOf(loc) * coordinate_offset))
+                                    .title(loc.getUsername())
+                                    .snippet(loc.getPost())
+                                    .icon(BitmapDescriptorFactory
+                                            .defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
+                        }
+                    }
+                }
+
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String provider) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String provider) {
+
+                }
+            };
+            return null;
+        }
     }
 }
