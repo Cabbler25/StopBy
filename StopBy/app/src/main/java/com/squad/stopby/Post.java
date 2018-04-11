@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,6 +43,7 @@ public class Post extends AppCompatActivity {
 
     private String userLatitude;
     private String userLongitude;
+    private String chooseLocation = null;
 
     private String username;
 
@@ -72,6 +74,34 @@ public class Post extends AppCompatActivity {
                 android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.choose_location_spinner));
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         locationSpinner.setAdapter(adapter);
+
+        locationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch(position){
+                    case 0:
+                        chooseLocation = null;
+                        break;
+                    case 1:
+                        chooseLocation = getString(R.string.capen);
+                        break;
+                    case 2:
+                        chooseLocation = getString(R.string.davis);
+                        break;
+                    case 3:
+                        chooseLocation = getString(R.string.lockwood);
+                        break;
+                    case 4:
+                        chooseLocation = getString(R.string.su);
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         post_messageField = (EditText) findViewById(R.id.post_messageField);
         postBtn = (Button) findViewById(R.id.postbtn);
@@ -132,13 +162,19 @@ public class Post extends AppCompatActivity {
 
                 String message = post_messageField.getText().toString();
 
-                //send username and post message to the database
-                LocationDB locationDB = new LocationDB(username, message, userLatitude, userLongitude);
-                locationDB.pushToDatabase(db.getDatabaseReference());
+                if(chooseLocation == null){
+                    //send username and post message to the database
+                    LocationDB locationDB = new LocationDB(username, message, userLatitude, userLongitude);
+                    locationDB.pushToDatabase(db.getDatabaseReference());
+
+
+                }else{
+                    LocationDB locationDB = new LocationDB(username, message, "", "");
+                    locationDB.pushToLocation(db.getDatabaseReference(), chooseLocation);
+                }
 
                 //clear the message textview
                 post_messageField.setText(null);
-
                 Toast.makeText(Post.this, "You have successfully posted!", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(Post.this, MapsActivity.class);
                 startActivity(intent);

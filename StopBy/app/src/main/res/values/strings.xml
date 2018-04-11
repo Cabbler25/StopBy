@@ -44,6 +44,12 @@
     <string name="profile_userInfoTag">Interests:</string>
     <string name="close">Close</string>
 
+    //locations
+    <string name="capen">Capen</string>
+    <string name="davis">Davis</string>
+    <string name="lockwood">Lockwood</string>
+    <string name="su">Student Union</string>
+
     <string name="choose_location">Choose Location</string>
     <string-array name="choose_location_spinner">
         <item>Current Location</item>
