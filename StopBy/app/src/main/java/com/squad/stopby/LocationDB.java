@@ -66,15 +66,17 @@ public class LocationDB {
 
     public void pushToDatabase(DatabaseReference databaseReference){
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        final String location = "Location";
+        final String location = "location";
+        final String current = "currentlocation";
 //        this.uid = databaseReference.child(location).push().getKey();
-        databaseReference.child(location).child(currentUser.getUid()).setValue(this);
+        databaseReference.child(location).child(current).child(currentUser.getUid()).setValue(this);
     }
 
     public void pushToLocation(DatabaseReference databaseReference, String chosenLocation){
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        final String location = chosenLocation;
+        final String location = "location";
+        final String current = chosenLocation;
 //        this.uid = databaseReference.child(location).push().getKey();
-        databaseReference.child(location).child(currentUser.getUid()).setValue(this);
+        databaseReference.child(location).child(current).child(currentUser.getUid()).setValue(this);
     }
 }
