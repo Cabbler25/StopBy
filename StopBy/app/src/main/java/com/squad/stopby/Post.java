@@ -169,7 +169,7 @@ public class Post extends AppCompatActivity {
 
 
                 }else{
-                    LocationDB locationDB = new LocationDB(username, message, "", "");
+                    ChooseLocationDB locationDB = new ChooseLocationDB(username, message);
                     locationDB.pushToLocation(db.getDatabaseReference(), chooseLocation);
                 }
 

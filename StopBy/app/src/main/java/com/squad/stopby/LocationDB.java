@@ -15,7 +15,6 @@ public class LocationDB {
     private String post;
     private String latitude;
     private String longitude;
-    private String uid;
 
     public LocationDB(){
         this.username = null;
@@ -68,7 +67,6 @@ public class LocationDB {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String location = "location";
         final String current = "currentlocation";
-//        this.uid = databaseReference.child(location).push().getKey();
         databaseReference.child(location).child(current).child(currentUser.getUid()).setValue(this);
     }
 
@@ -76,7 +74,6 @@ public class LocationDB {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String location = "location";
         final String current = chosenLocation;
-//        this.uid = databaseReference.child(location).push().getKey();
         databaseReference.child(location).child(current).child(currentUser.getUid()).setValue(this);
     }
 }
