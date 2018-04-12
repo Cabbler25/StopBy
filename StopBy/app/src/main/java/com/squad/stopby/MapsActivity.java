@@ -1,6 +1,7 @@
 package com.squad.stopby;
 
 import android.*;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -22,6 +24,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -31,6 +35,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -41,10 +47,12 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
     private ArrayList<LocationDB> locations = new ArrayList<LocationDB>();
     private Database db;
 
@@ -53,6 +61,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private DatabaseReference profileDatabaseReference;
     private String username = "";
+
+    //private ConcurrentHashMap<LocationDB> storeUsers = new
 
     private static final double coordinate_offset = 0.00002f;
 
@@ -64,7 +74,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
+/*
         db = new Database();
         profileDatabaseReference = db.getDatabaseReference().child("user profile");
 
@@ -82,12 +92,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
-
+*/
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        getUsersLocation();
+        mMap.setMyLocationEnabled(true);
+        /*
+        LatLng loc = new LatLng(43.000870, -78.789746);
+        mMap.addMarker(new MarkerOptions().position(loc).title("here"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 15));
+*/
         
         //locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         //new FindUsersLocation().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, "");
@@ -287,5 +305,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             };
             return null;
         }
+    }
+
+    private void getUsersLocation(){
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        //cannot access map without granting permission
+        @SuppressLint("MissingPermission") Task location = mFusedLocationProviderClient.getLastLocation();
+        location.addOnCompleteListener(new OnCompleteListener() {
+            @Override
+            public void onComplete(@NonNull Task task) {
+                if(task.isSuccessful()){
+                    //if location returns null default to UB
+                    Location currentLocation = (Location) task.getResult();
+                    if(currentLocation != null){
+                       mMap.moveCamera(CameraUpdateFactory.
+                               newLatLngZoom(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 15));
+                   }else{
+                        mMap.moveCamera(CameraUpdateFactory.
+                                newLatLngZoom(new LatLng(43.000870, -78.789746), 15));
+                    }
+                }else{
+                    mMap.moveCamera(CameraUpdateFactory.
+                            newLatLngZoom(new LatLng(43.000870, -78.789746), 15));
+                }
+            }
+        });
     }
 }
