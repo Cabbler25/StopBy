@@ -15,13 +15,13 @@ public class ChooseLocationDB {
         }
 
 
-        public ChooseLocationDB(String username, String post){
-            this.name = username;
-            this.message = post;
+        public ChooseLocationDB(String name, String msg){
+            this.name = name;
+            this.message = msg;
         }
 
-        public void setUsername(String username){
-            this.name = username;
+        public void setUsername(String name){
+            this.name = name;
         }
 
         public void setPost(String post) {

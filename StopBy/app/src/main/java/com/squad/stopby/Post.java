@@ -169,8 +169,8 @@ public class Post extends AppCompatActivity {
 
 
                 }else{
-                    ChooseLocationDB locationDB = new ChooseLocationDB(username, message);
-                    locationDB.pushToLocation(db.getDatabaseReference(), chooseLocation);
+                    ChooseLocationDB chooselocationDB = new ChooseLocationDB(username, message);
+                    chooselocationDB.pushToLocation(db.getDatabaseReference(), chooseLocation);
                 }
 
                 //clear the message textview
